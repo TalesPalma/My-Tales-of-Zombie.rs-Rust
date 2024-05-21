@@ -1,16 +1,28 @@
 use bevy::prelude::*;
 
 fn main() {
-   App::new()
-        .add_systems(Update,hello_world)
-        .run(); 
-
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_systems(Startup,setup)
+        .run();
 }
 
-fn hello_world() {
-  println!("Hello world!");
-}
 
+
+fn setup(mut commands:Commands,asset_server:Res<AssetServer>){
+    
+    commands.spawn(Camera2dBundle{
+        transform : Transform::from_scale(Vec3::new(0.25,0.25,0.25)),
+        ..default()
+    });
+
+    commands.spawn(SpriteBundle{
+     texture : asset_server.load("little_heroes.png"),
+     transform : Transform::from_xyz(0.0 ,0.0, 0.0),
+     ..default()
+    });
+
+}
 
 
 
