@@ -3,7 +3,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_systems(Startup, setup)
-        .add_systems(Update, move_system)
+        .add_systems(Update, keyboard_input_system)
+        .add_systems(Update, moviment_system.after(keyboard_input_system))
         .run();
 }
 
@@ -12,28 +13,39 @@ struct Movement {
     speed: f32,
 }
 
-fn move_system(
-    mut entitie: Query<(&Movement, &mut Transform)>,
-    time: Res<Time>,
+#[derive(Component, Default)]
+struct Velocity(Vec3);
+
+fn keyboard_input_system(
+    mut entitie: Query<(&Movement, &mut Velocity)>,
     keyboard: Res<ButtonInput<KeyCode>>,
 ) {
-    for (obj, mut transform) in entitie.iter_mut() {
+    for (mov, mut vel) in entitie.iter_mut() {
+        vel.0 = Vec3::default();
         if keyboard.pressed(KeyCode::KeyW) {
-            transform.translation.y += obj.speed * time.delta_seconds();
+            vel.0.y += mov.speed;
         }
         if keyboard.pressed(KeyCode::KeyA) {
-            transform.translation.x -= obj.speed * time.delta_seconds();
+            vel.0.x -= mov.speed;
         }
         if keyboard.pressed(KeyCode::KeyS) {
-            transform.translation.y -= obj.speed * time.delta_seconds();
+            vel.0.y -= mov.speed;
         }
         if keyboard.pressed(KeyCode::KeyD) {
-            transform.translation.x += obj.speed * time.delta_seconds();
+            vel.0.x += mov.speed;
         }
     }
 }
 
+fn moviment_system(mut entitie: Query<(&Velocity, &mut Transform)>, time: Res<Time>) {
+    for (vel, mut transform) in entitie.iter_mut() {
+        transform.translation += vel.0 * time.delta_seconds();
+    }
+}
+
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    println!("Ola pesosal");
+
     //Ajuste camera
     commands.spawn(Camera2dBundle {
         transform: Transform::from_scale(Vec3::new(0.25, 0.25, 0.25)),
@@ -54,5 +66,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_xyz(-30.0, 0.0, 0.0),
             ..default()
         })
-        .insert(Movement { speed: 60.0 });
+        .insert(Movement { speed: 10.0 })
+        .insert(Velocity::default());
 }
