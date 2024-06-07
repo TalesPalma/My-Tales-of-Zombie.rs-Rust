@@ -53,19 +53,26 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 
     //samurai (Personagem principal)
+    commands
+        .spawn(SpriteBundle {
+            texture: asset_server.load("samurai.png"),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            ..default()
+        })
+        .insert(Velocity::default())
+        .insert(Movement { speed: 20.0 });
+
+    // Zombie village
     commands.spawn(SpriteBundle {
-        texture: asset_server.load("samurai.png"),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+        texture: asset_server.load("zombie_village.png"),
+        transform: Transform::from_xyz(-40.0, 0.0, 0.0),
         ..default()
     });
 
     //Ninjas (inimigos)
-    commands
-        .spawn(SpriteBundle {
-            texture: asset_server.load("ninja.png"),
-            transform: Transform::from_xyz(-30.0, 0.0, 0.0),
-            ..default()
-        })
-        .insert(Movement { speed: 10.0 })
-        .insert(Velocity::default());
+    commands.spawn(SpriteBundle {
+        texture: asset_server.load("ninja.png"),
+        transform: Transform::from_xyz(-30.0, 0.0, 0.0),
+        ..default()
+    });
 }
