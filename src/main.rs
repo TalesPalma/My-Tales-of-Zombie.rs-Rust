@@ -1,8 +1,9 @@
-use bevy::prelude::*;
+use bevy::{prelude::*};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_systems(Startup, setup)
+        .add_systems(Update, z_index_system)
         .add_systems(Update, keyboard_input_system)
         .add_systems(Update, moviment_system.after(keyboard_input_system))
         .run();
@@ -37,9 +38,20 @@ fn keyboard_input_system(
     }
 }
 
+fn z_index_system(mut entitie: Query<&mut Transform, Without<Camera>>) {
+    for mut transform in entitie.iter_mut() {
+        transform.translation.z = -1.0 * transform.translation.y;
+    }
+}
+
 fn moviment_system(mut entitie: Query<(&Velocity, &mut Transform)>, time: Res<Time>) {
     for (vel, mut transform) in entitie.iter_mut() {
         transform.translation += vel.0 * time.delta_seconds();
+        if vel.0.x > 0.0 {
+            transform.scale = Vec3::new(1.0, 1.0, 1.0);
+        } else if vel.0.x < 0.0 {
+            transform.scale = Vec3::new(-1.0, 1.0, 1.0)
+        }
     }
 }
 
@@ -60,8 +72,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         })
         .insert(Velocity::default())
-        .insert(Movement { speed: 20.0 });
-
+        .insert(Movement { speed: 40.0 });
     // Zombie village
     commands.spawn(SpriteBundle {
         texture: asset_server.load("zombie_village.png"),
