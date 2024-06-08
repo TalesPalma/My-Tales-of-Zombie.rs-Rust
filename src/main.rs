@@ -1,4 +1,7 @@
-use bevy::{prelude::*};
+use bevy::{
+    prelude::*,
+    window::{CursorGrabMode, PrimaryWindow},
+};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
@@ -20,11 +23,14 @@ struct Velocity(Vec3);
 fn keyboard_input_system(
     mut entitie: Query<(&Movement, &mut Velocity)>,
     keyboard: Res<ButtonInput<KeyCode>>,
+    mouse: Res<ButtonInput<MouseButton>>,
+    mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
 ) {
     for (mov, mut vel) in entitie.iter_mut() {
         vel.0 = Vec3::default();
         if keyboard.pressed(KeyCode::KeyW) {
             vel.0.y += mov.speed;
+            println!("{}", mov.speed)
         }
         if keyboard.pressed(KeyCode::KeyA) {
             vel.0.x -= mov.speed;
@@ -34,6 +40,17 @@ fn keyboard_input_system(
         }
         if keyboard.pressed(KeyCode::KeyD) {
             vel.0.x += mov.speed;
+        }
+
+        //Testando ainda
+        if mouse.pressed(MouseButton::Left) {
+            let prymary_window = q_windows.single_mut();
+            let width_windown = prymary_window.width();
+            let height_windown = prymary_window.height();
+            if let Some(position) = prymary_window.cursor_position() {
+                vel.0.x = position.x - width_windown / 2.0;
+                vel.0.y = height_windown / 2.0 - position.y;
+            }
         }
     }
 }
@@ -51,6 +68,11 @@ fn moviment_system(mut entitie: Query<(&Velocity, &mut Transform)>, time: Res<Ti
             transform.scale = Vec3::new(1.0, 1.0, 1.0);
         } else if vel.0.x < 0.0 {
             transform.scale = Vec3::new(-1.0, 1.0, 1.0)
+        }
+
+        if vel.0.length() > 0.0 {
+            let phase = (time.elapsed_seconds() * 20.0).sin();
+            transform.scale.y = phase.remap(-1.0, 1.0, 0.9, 1.0)
         }
     }
 }
