@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    window::{CursorGrabMode, PrimaryWindow},
-};
+use bevy::{prelude::*, window::PrimaryWindow};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
@@ -30,7 +27,6 @@ fn keyboard_input_system(
         vel.0 = Vec3::default();
         if keyboard.pressed(KeyCode::KeyW) {
             vel.0.y += mov.speed;
-            println!("{}", mov.speed)
         }
         if keyboard.pressed(KeyCode::KeyA) {
             vel.0.x -= mov.speed;
@@ -78,8 +74,6 @@ fn moviment_system(mut entitie: Query<(&Velocity, &mut Transform)>, time: Res<Ti
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    println!("Ola pesosal");
-
     //Ajuste camera
     commands.spawn(Camera2dBundle {
         transform: Transform::from_scale(Vec3::new(0.25, 0.25, 0.25)),
@@ -95,6 +89,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .insert(Velocity::default())
         .insert(Movement { speed: 40.0 });
+
     // Zombie village
     commands.spawn(SpriteBundle {
         texture: asset_server.load("zombie_village.png"),
