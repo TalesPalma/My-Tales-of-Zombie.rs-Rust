@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
@@ -20,8 +20,6 @@ struct Velocity(Vec3);
 fn keyboard_input_system(
     mut entitie: Query<(&Movement, &mut Velocity)>,
     keyboard: Res<ButtonInput<KeyCode>>,
-    mouse: Res<ButtonInput<MouseButton>>,
-    mut q_windows: Query<&mut Window, With<PrimaryWindow>>,
 ) {
     for (mov, mut vel) in entitie.iter_mut() {
         vel.0 = Vec3::default();
@@ -36,17 +34,6 @@ fn keyboard_input_system(
         }
         if keyboard.pressed(KeyCode::KeyD) {
             vel.0.x += mov.speed;
-        }
-
-        //Testando ainda
-        if mouse.pressed(MouseButton::Left) {
-            let prymary_window = q_windows.single_mut();
-            let width_windown = prymary_window.width();
-            let height_windown = prymary_window.height();
-            if let Some(position) = prymary_window.cursor_position() {
-                vel.0.x = position.x - width_windown / 2.0;
-                vel.0.y = height_windown / 2.0 - position.y;
-            }
         }
     }
 }
