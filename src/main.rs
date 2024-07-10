@@ -1,63 +1,20 @@
+mod components;
+mod systems;
+use crate::systems::moviment_systems;
 use bevy::prelude::*;
+use components::{movement::Movement, velocity::Velocity};
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_systems(Startup, setup)
-        .add_systems(Update, z_index_system)
-        .add_systems(Update, keyboard_input_system)
-        .add_systems(Update, moviment_system.after(keyboard_input_system))
+        .add_systems(Update, moviment_systems::z_index)
+        .add_systems(Update, moviment_systems::keyboard_input)
+        .add_systems(
+            Update,
+            moviment_systems::moviment.after(moviment_systems::keyboard_input),
+        )
         .run();
-}
-
-#[derive(Component)]
-struct Movement {
-    speed: f32,
-}
-
-#[derive(Component, Default)]
-struct Velocity(Vec3);
-
-fn keyboard_input_system(
-    mut entitie: Query<(&Movement, &mut Velocity)>,
-    keyboard: Res<ButtonInput<KeyCode>>,
-) {
-    for (mov, mut vel) in entitie.iter_mut() {
-        vel.0 = Vec3::default();
-        if keyboard.pressed(KeyCode::KeyW) {
-            vel.0.y += mov.speed;
-        }
-        if keyboard.pressed(KeyCode::KeyA) {
-            vel.0.x -= mov.speed;
-        }
-        if keyboard.pressed(KeyCode::KeyS) {
-            vel.0.y -= mov.speed;
-        }
-        if keyboard.pressed(KeyCode::KeyD) {
-            vel.0.x += mov.speed;
-        }
-    }
-}
-
-fn z_index_system(mut entitie: Query<&mut Transform, Without<Camera>>) {
-    for mut transform in entitie.iter_mut() {
-        transform.translation.z = -1.0 * transform.translation.y;
-    }
-}
-
-fn moviment_system(mut entitie: Query<(&Velocity, &mut Transform)>, time: Res<Time>) {
-    for (vel, mut transform) in entitie.iter_mut() {
-        transform.translation += vel.0 * time.delta_seconds();
-        if vel.0.x > 0.0 {
-            transform.scale = Vec3::new(1.0, 1.0, 1.0);
-        } else if vel.0.x < 0.0 {
-            transform.scale = Vec3::new(-1.0, 1.0, 1.0)
-        }
-
-        if vel.0.length() > 0.0 {
-            let phase = (time.elapsed_seconds() * 20.0).sin();
-            transform.scale.y = phase.remap(-1.0, 1.0, 0.9, 1.0)
-        }
-    }
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -68,7 +25,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 
     //samurai (Personagem principal)
-    commands
+    let insert = commands
         .spawn(SpriteBundle {
             texture: asset_server.load("samurai.png"),
             transform: Transform::from_xyz(0.0, 0.0, 0.0),
